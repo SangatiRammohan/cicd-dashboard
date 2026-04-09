@@ -42,11 +42,12 @@ spec:
           serviceAccountName: ecr-refresher
           containers:
             - name: ecr-refresher
-              image: amazon/aws-cli
+              image: bitnami/kubectl:latest
               command:
                 - /bin/sh
                 - -c
                 - |
+                  apt-get install -y awscli 2>/dev/null || apk add --no-cache aws-cli 2>/dev/null || true
                   TOKEN=$(aws ecr get-login-password --region ap-south-1)
                   kubectl create secret docker-registry ecr-secret \
                     --docker-server=522814728042.dkr.ecr.ap-south-1.amazonaws.com \
@@ -65,4 +66,6 @@ spec:
                     secretKeyRef:
                       name: aws-credentials
                       key: secret-access-key
+                - name: AWS_DEFAULT_REGION
+                  value: ap-south-1
           restartPolicy: OnFailure
