@@ -11,7 +11,6 @@ const kubernetesRouter = require('./routes/kubernetes');
 function createApp() {
   const app = express();
 
-  // Prometheus metrics
   const register = new client.Registry();
   client.collectDefaultMetrics({ register });
 
@@ -34,7 +33,6 @@ function createApp() {
   app.use(cors());
   app.use(express.json());
 
-  // Track request duration
   app.use((req, res, next) => {
     const end = httpRequestDuration.startTimer();
     res.on('finish', () => {
@@ -53,17 +51,16 @@ function createApp() {
   });
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-  app.get('/ready',  (_req, res) => res.json({ status: 'ready' }));
+  app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
 
-  // Prometheus metrics endpoint
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());
   });
 
-  app.use('/api/pipelines',   pipelinesRouter);
+  app.use('/api/pipelines', pipelinesRouter);
   app.use('/api/deployments', deploymentsRouter);
-  app.use('/api/kubernetes',  kubernetesRouter);
+  app.use('/api/kubernetes', kubernetesRouter);
   app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
   app.use(errorHandler);
 
