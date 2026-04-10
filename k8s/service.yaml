@@ -3,11 +3,14 @@ kind: Service
 metadata:
   name: express-app
   namespace: cicd-platform
+  labels:
+    app: express-app
 spec:
   selector:
     app: express-app
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 3000
   type: ClusterIP
