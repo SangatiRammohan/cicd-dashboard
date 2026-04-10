@@ -5,7 +5,8 @@ import PipelineList from './components/PipelineList'
 import PodGrid from './components/PodGrid'
 import DeploymentTable from './components/DeploymentTable'
 
-const socket = io('http://localhost:4000')
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000'
+const socket = io(BACKEND_URL)
 
 export default function App() {
   const [pipelines, setPipelines] = useState([])
@@ -31,14 +32,14 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/pipelines').then(r => r.json()).then(setPipelines)
-    fetch('/api/pipelines/stats').then(r => r.json()).then(setStats)
-    fetch('/api/deployments').then(r => r.json()).then(setDeployments)
-    fetch('/api/kubernetes/pods').then(r => r.json()).then(setPods)
+    fetch(`${BACKEND_URL}/api/pipelines`).then(r => r.json()).then(setPipelines)
+    fetch(`${BACKEND_URL}/api/pipelines/stats`).then(r => r.json()).then(setStats)
+    fetch(`${BACKEND_URL}/api/deployments`).then(r => r.json()).then(setDeployments)
+    fetch(`${BACKEND_URL}/api/kubernetes/pods`).then(r => r.json()).then(setPods)
 
     const interval = setInterval(() => {
-      fetch('/api/kubernetes/pods').then(r => r.json()).then(setPods)
-      fetch('/api/pipelines/stats').then(r => r.json()).then(setStats)
+      fetch(`${BACKEND_URL}/api/kubernetes/pods`).then(r => r.json()).then(setPods)
+      fetch(`${BACKEND_URL}/api/pipelines/stats`).then(r => r.json()).then(setStats)
     }, 10000)
     return () => clearInterval(interval)
   }, [])
