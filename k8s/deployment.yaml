@@ -25,7 +25,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: express-app
-          image: 522814728042.dkr.ecr.ap-south-1.amazonaws.com/express-app:f5d436abac556ff4a16592b26ef8b34a9bb9f444
+          image: 522814728042.dkr.ecr.ap-south-1.amazonaws.com/express-app:88ab70c0a45df2f5530961843d50006bb3d7e2e9
           imagePullPolicy: Always
           ports:
             - name: http
