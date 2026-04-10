@@ -4,7 +4,6 @@ const { exec } = require('child_process');
 const { promisify } = require('util');
 const execAsync = promisify(exec);
 const logger = require('../utils/logger');
-
 const NS = process.env.KUBE_NAMESPACE || 'cicd-platform';
 
 router.get('/pods', async (req, res) => {
@@ -22,8 +21,8 @@ router.get('/pods', async (req, res) => {
     }));
     res.json(pods);
   } catch (err) {
-    logger.error('Failed to get pods', { error: err.message });
-    res.status(500).json({ error: err.message });
+    logger.warn('kubectl not available, returning empty pods', { error: err.message });
+    res.json([]);
   }
 });
 
@@ -41,8 +40,8 @@ router.get('/deployments', async (req, res) => {
     }));
     res.json(deployments);
   } catch (err) {
-    logger.error('Failed to get deployments', { error: err.message });
-    res.status(500).json({ error: err.message });
+    logger.warn('kubectl not available, returning empty deployments', { error: err.message });
+    res.json([]);
   }
 });
 
