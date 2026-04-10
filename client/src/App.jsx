@@ -32,15 +32,38 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/pipelines`).then(r => r.json()).then(setPipelines)
-    fetch(`${BACKEND_URL}/api/pipelines/stats`).then(r => r.json()).then(setStats)
-    fetch(`${BACKEND_URL}/api/deployments`).then(r => r.json()).then(setDeployments)
-    fetch(`${BACKEND_URL}/api/kubernetes/pods`).then(r => r.json()).then(setPods)
+    fetch(`${BACKEND_URL}/api/pipelines`)
+      .then(r => r.json())
+      .then(data => Array.isArray(data) ? setPipelines(data) : setPipelines([]))
+      .catch(() => setPipelines([]))
+
+    fetch(`${BACKEND_URL}/api/pipelines/stats`)
+      .then(r => r.json())
+      .then(data => data && typeof data === 'object' ? setStats(data) : null)
+      .catch(() => {})
+
+    fetch(`${BACKEND_URL}/api/deployments`)
+      .then(r => r.json())
+      .then(data => Array.isArray(data) ? setDeployments(data) : setDeployments([]))
+      .catch(() => setDeployments([]))
+
+    fetch(`${BACKEND_URL}/api/kubernetes/pods`)
+      .then(r => r.json())
+      .then(data => Array.isArray(data) ? setPods(data) : setPods([]))
+      .catch(() => setPods([]))
 
     const interval = setInterval(() => {
-      fetch(`${BACKEND_URL}/api/kubernetes/pods`).then(r => r.json()).then(setPods)
-      fetch(`${BACKEND_URL}/api/pipelines/stats`).then(r => r.json()).then(setStats)
+      fetch(`${BACKEND_URL}/api/kubernetes/pods`)
+        .then(r => r.json())
+        .then(data => Array.isArray(data) ? setPods(data) : setPods([]))
+        .catch(() => setPods([]))
+
+      fetch(`${BACKEND_URL}/api/pipelines/stats`)
+        .then(r => r.json())
+        .then(data => data && typeof data === 'object' ? setStats(data) : null)
+        .catch(() => {})
     }, 10000)
+
     return () => clearInterval(interval)
   }, [])
 
