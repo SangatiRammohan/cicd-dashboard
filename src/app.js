@@ -7,8 +7,10 @@ const errorHandler = require('./middleware/errorHandler');
 const pipelinesRouter = require('./routes/pipelines');
 const deploymentsRouter = require('./routes/deployments');
 const kubernetesRouter = require('./routes/kubernetes');
+const { handleGithubWebhook } = require('./webhooks/github');
+const { handleArgoCDWebhook } = require('./webhooks/argocd');
 
-function createApp() {
+function createApp(io) {
   const app = express();
 
   const register = new client.Registry();
@@ -36,23 +38,14 @@ function createApp() {
   app.use((req, res, next) => {
     const end = httpRequestDuration.startTimer();
     res.on('finish', () => {
-      end({
-        method: req.method,
-        route: req.route?.path || req.path,
-        status_code: res.statusCode,
-      });
-      httpRequestTotal.inc({
-        method: req.method,
-        route: req.route?.path || req.path,
-        status_code: res.statusCode,
-      });
+      end({ method: req.method, route: req.route?.path || req.path, status_code: res.statusCode });
+      httpRequestTotal.inc({ method: req.method, route: req.route?.path || req.path, status_code: res.statusCode });
     });
     next();
   });
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
   app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
-
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());
@@ -61,6 +54,11 @@ function createApp() {
   app.use('/api/pipelines', pipelinesRouter);
   app.use('/api/deployments', deploymentsRouter);
   app.use('/api/kubernetes', kubernetesRouter);
+
+  // Webhook routes — must be before 404 handler
+  app.post('/webhooks/github', (req, res) => handleGithubWebhook(req, res, io));
+  app.post('/webhooks/argocd', (req, res) => handleArgoCDWebhook(req, res, io));
+
   app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
   app.use(errorHandler);
 
